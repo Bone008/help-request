@@ -35,7 +35,7 @@ export function LocationInput({ location, setLocation }: LocationInputProps) {
         setLoadingCoords(false);
       },
       (error) => {
-        alert("Unable to retrieve your location: " + error.message);
+        alert("Could not access your location :(\n\n" + error.message);
         setLoadingCoords(false);
       }
     );

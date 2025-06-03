@@ -1,6 +1,7 @@
-import axios from "axios";
-import { useState } from "react";
-import { LocationInput, type LocationData } from "./components/LocationInput"; // Import the Location interface
+import { useEffect, useRef, useState } from "react";
+import { LocationInput, type LocationData } from "./components/LocationInput";
+import { useLocalStorage } from "./hooks/useLocalStorage"; // Import the custom hook
+import { sendNotification } from "./utils/sendNotification"; // Import the sendNotification function
 
 const emojis = [
   { id: "fruit", label: "🍊" },
@@ -10,11 +11,19 @@ const emojis = [
 ];
 
 export default function App() {
-  const [name, setName] = useState("");
+  const [name, setName] = useLocalStorage("name", ""); // Use local storage for name
   const [selected, setSelected] = useState<string | null>(null);
   const [statusLog, setStatusLog] = useState<[string, boolean]>(["", false]);
   const [loading, setLoading] = useState(false);
   const [location, setLocation] = useState<LocationData>({ text: "" });
+  const [editingName, setEditingName] = useState<boolean>(!name); // State to toggle name editing
+  const nameInputRef = useRef<HTMLInputElement | null>(null); // Ref for the input field
+
+  useEffect(() => {
+    if (editingName && nameInputRef.current) {
+      nameInputRef.current.focus();
+    }
+  }, [editingName]);
 
   const toggleSelected = (id: string) => {
     if (selected === id) {
@@ -34,16 +43,14 @@ export default function App() {
     setLoading(true); // Set loading to true
     try {
       const payload = {
-        name,
-        selection: selected,
+        name: name.trim(),
+        emoji: emojis.find((emoji) => emoji.id === selected)?.label || "",
         location, // Includes text, coords, and accuracy
       };
 
-      //await axios.post("/api/notify", payload);
-      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate network delay
-      console.log("Simulated payload:", payload); // Log the payload to the console
+      await sendNotification(payload); // Send the notification
 
-      setStatusLog(["Data sent successfully!", false]);
+      setStatusLog(["Help is on the way!", false]);
     } catch (error) {
       setStatusLog(["Error sending data: " + (error as Error).message, true]);
       console.error(error);
@@ -54,13 +61,33 @@ export default function App() {
 
   return (
     <div className="min-h-screen p-6 text-center flex flex-col items-center justify-start space-y-6 bg-teal-100">
-      <input
-        type="text"
-        placeholder="Who are you?"
-        className="border border-orange-300 p-4 rounded-xl w-full max-w-xs text-md focus:outline-none focus:ring-2 focus:ring-orange-400"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-      />
+      {editingName ? (
+        <input
+          ref={nameInputRef}
+          type="text"
+          placeholder="Who are you?"
+          className="border border-orange-300 p-4 rounded-xl w-full max-w-xs text-md focus:outline-none focus:ring-2 focus:ring-orange-400"
+          value={name}
+          required
+          onChange={(e) => setName(e.target.value)}
+          onBlur={() => name && setEditingName(false)} // Stop editing on blur
+          onKeyDown={(e) => {
+            if (name && e.key === "Enter") {
+              setEditingName(false); // Stop editing on pressing Enter
+            }
+          }}
+        />
+      ) : (
+        <div className="flex items-center space-x-2">
+          <h1 className="text-2xl font-semibold">Hello {name || "there"}!</h1>
+          <button
+            onClick={() => setEditingName(true)}
+            className="text-sm text-gray-500 underline hover:text-gray-700"
+          >
+            Edit
+          </button>
+        </div>
+      )}
 
       <div className="grid grid-cols-2 gap-6 w-full max-w-xs">
         {emojis.map((emoji) => (
