@@ -1,5 +1,6 @@
 import axios from "axios";
 import { useState } from "react";
+import { LocationInput, type LocationData } from "./components/LocationInput"; // Import the Location interface
 
 const emojis = [
   { id: "fruit", label: "🍊" },
@@ -10,10 +11,10 @@ const emojis = [
 
 export default function App() {
   const [name, setName] = useState("");
-  const [location, setLocation] = useState("");
   const [selected, setSelected] = useState<string | null>(null);
   const [statusLog, setStatusLog] = useState<[string, boolean]>(["", false]);
   const [loading, setLoading] = useState(false);
+  const [location, setLocation] = useState<LocationData>({ text: "" });
 
   const toggleSelected = (id: string) => {
     if (selected === id) {
@@ -35,7 +36,7 @@ export default function App() {
       const payload = {
         name,
         selection: selected,
-        location,
+        location, // Includes text, coords, and accuracy
       };
 
       //await axios.post("/api/notify", payload);
@@ -52,11 +53,11 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen p-6 bg-gradient-to-b from-orange-100 to-white text-center flex flex-col items-center justify-start space-y-6">
+    <div className="min-h-screen p-6 text-center flex flex-col items-center justify-start space-y-6 bg-teal-100">
       <input
         type="text"
         placeholder="Who are you?"
-        className="border border-orange-300 p-4 rounded-xl w-full max-w-xs text-lg focus:outline-none focus:ring-2 focus:ring-orange-400"
+        className="border border-orange-300 p-4 rounded-xl w-full max-w-xs text-md focus:outline-none focus:ring-2 focus:ring-orange-400"
         value={name}
         onChange={(e) => setName(e.target.value)}
       />
@@ -77,13 +78,7 @@ export default function App() {
         ))}
       </div>
 
-      <input
-        type="text"
-        placeholder="Where are you? (optional)"
-        className="border border-orange-300 p-4 rounded-xl w-full max-w-xs text-lg focus:outline-none focus:ring-2 focus:ring-orange-400"
-        value={location}
-        onChange={(e) => setLocation(e.target.value)}
-      />
+      <LocationInput location={location} setLocation={setLocation} />
 
       <div className="flex items-center justify-between w-full max-w-xs">
         <p
@@ -97,7 +92,7 @@ export default function App() {
         <button
           onClick={handleSend}
           disabled={loading} // Disable button when loading
-          className={`bg-red-500 text-white text-3xl w-20 h-20 flex items-center justify-center rounded-full shadow-lg transition flex-shrink-0 ${
+          className={`bg-teal-500 text-white text-3xl w-20 h-20 flex items-center justify-center rounded-full shadow-lg transition flex-shrink-0 ${
             loading ? "opacity-50 cursor-not-allowed" : "hover:bg-red-600"
           }`}
         >
