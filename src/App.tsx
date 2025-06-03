@@ -3,12 +3,7 @@ import { LocationInput, type LocationData } from "./components/LocationInput";
 import { useLocalStorage } from "./hooks/useLocalStorage"; // Import the custom hook
 import { sendNotification } from "./utils/sendNotification"; // Import the sendNotification function
 
-const emojis = [
-  { id: "fruit", label: "🍊" },
-  { id: "person", label: "🧑" },
-  { id: "leaf", label: "🍂" },
-  { id: "plus", label: "➕" },
-];
+const emojis = ["🍉", "🤗", "⛑️", "💆", "🗣️", "🤹"]; // Updated emojis array
 
 export default function App() {
   const [name, setName] = useLocalStorage("name", ""); // Use local storage for name
@@ -25,26 +20,21 @@ export default function App() {
     }
   }, [editingName]);
 
-  const toggleSelected = (id: string) => {
-    if (selected === id) {
+  const toggleSelected = (emoji: string) => {
+    if (selected === emoji) {
       setSelected(null); // Deselect if already selected
     } else {
-      setSelected(id); // Select the new emoji
+      setSelected(emoji); // Select the new emoji
     }
     setStatusLog(["", false]); // Clear message when selection changes
   };
 
   const handleSend = async () => {
-    if (!name || !selected) {
-      setStatusLog(["Please enter your name and select an emoji.", true]);
-      return;
-    }
-
     setLoading(true); // Set loading to true
     try {
       const payload = {
         name: name.trim(),
-        emoji: emojis.find((emoji) => emoji.id === selected)?.label || "",
+        emoji: selected || "", // Use the selected emoji directly
         location, // Includes text, coords, and accuracy
       };
 
@@ -92,15 +82,15 @@ export default function App() {
       <div className="grid grid-cols-2 gap-6 w-full max-w-xs">
         {emojis.map((emoji) => (
           <button
-            key={emoji.id}
-            onClick={() => toggleSelected(emoji.id)}
+            key={emoji} // Key by emoji string
+            onClick={() => toggleSelected(emoji)}
             className={`text-6xl p-6 rounded-3xl shadow-md transition transform active:scale-95 ${
-              selected === emoji.id
+              selected === emoji
                 ? "bg-orange-300"
                 : "bg-white border border-gray-300"
             }`}
           >
-            {emoji.label}
+            {emoji}
           </button>
         ))}
       </div>
@@ -118,9 +108,11 @@ export default function App() {
 
         <button
           onClick={handleSend}
-          disabled={loading} // Disable button when loading
+          disabled={loading || !name || !selected} // Disable button if loading or data is incomplete
           className={`bg-teal-500 text-white text-3xl w-20 h-20 flex items-center justify-center rounded-full shadow-lg transition flex-shrink-0 ${
-            loading ? "opacity-50 cursor-not-allowed" : "hover:bg-red-600"
+            loading || !name || !selected
+              ? "opacity-50 cursor-not-allowed"
+              : "hover:bg-teal-600"
           }`}
         >
           {loading ? (
