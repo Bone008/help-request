@@ -12,14 +12,25 @@ export default function App() {
   const [name, setName] = useState("");
   const [location, setLocation] = useState("");
   const [selected, setSelected] = useState<string | null>(null);
-  const [message, setMessage] = useState("");
+  const [statusLog, setStatusLog] = useState<[string, boolean]>(["", false]);
+  const [loading, setLoading] = useState(false);
+
+  const toggleSelected = (id: string) => {
+    if (selected === id) {
+      setSelected(null); // Deselect if already selected
+    } else {
+      setSelected(id); // Select the new emoji
+    }
+    setStatusLog(["", false]); // Clear message when selection changes
+  };
 
   const handleSend = async () => {
     if (!name || !selected) {
-      setMessage("Please enter your name and select an emoji.");
+      setStatusLog(["Please enter your name and select an emoji.", true]);
       return;
     }
 
+    setLoading(true); // Set loading to true
     try {
       const payload = {
         name,
@@ -27,21 +38,24 @@ export default function App() {
         location,
       };
 
-      await axios.post("https://your-backend-url.com/api/submit", payload);
-      setMessage("Data sent successfully!");
+      //await axios.post("/api/notify", payload);
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate network delay
+      console.log("Simulated payload:", payload); // Log the payload to the console
+
+      setStatusLog(["Data sent successfully!", false]);
     } catch (error) {
-      setMessage("Error sending data.");
+      setStatusLog(["Error sending data: " + (error as Error).message, true]);
       console.error(error);
+    } finally {
+      setLoading(false); // Set loading to false
     }
   };
 
   return (
     <div className="min-h-screen p-6 bg-gradient-to-b from-orange-100 to-white text-center flex flex-col items-center justify-start space-y-6">
-      <h1 className="text-5xl font-extrabold text-orange-500 mt-4">Tänk</h1>
-
       <input
         type="text"
-        placeholder="Enter your name"
+        placeholder="Who are you?"
         className="border border-orange-300 p-4 rounded-xl w-full max-w-xs text-lg focus:outline-none focus:ring-2 focus:ring-orange-400"
         value={name}
         onChange={(e) => setName(e.target.value)}
@@ -51,9 +65,11 @@ export default function App() {
         {emojis.map((emoji) => (
           <button
             key={emoji.id}
-            onClick={() => setSelected(emoji.id)}
+            onClick={() => toggleSelected(emoji.id)}
             className={`text-6xl p-6 rounded-3xl shadow-md transition transform active:scale-95 ${
-              selected === emoji.id ? "bg-orange-300" : "bg-white border border-gray-300"
+              selected === emoji.id
+                ? "bg-orange-300"
+                : "bg-white border border-gray-300"
             }`}
           >
             {emoji.label}
@@ -63,20 +79,54 @@ export default function App() {
 
       <input
         type="text"
-        placeholder="Gata / Tänt (location optional)"
+        placeholder="Where are you? (optional)"
         className="border border-orange-300 p-4 rounded-xl w-full max-w-xs text-lg focus:outline-none focus:ring-2 focus:ring-orange-400"
         value={location}
         onChange={(e) => setLocation(e.target.value)}
       />
 
-      <button
-        onClick={handleSend}
-        className="bg-red-500 text-white text-3xl w-20 h-20 flex items-center justify-center rounded-full shadow-lg hover:bg-red-600 transition"
-      >
-        ▶
-      </button>
+      <div className="flex items-center justify-between w-full max-w-xs">
+        <p
+          className={`text-base max-w-xs px-2 text-left ${
+            statusLog[1] ? "text-red-500" : "text-gray-700"
+          }`}
+        >
+          {statusLog[0]}
+        </p>
 
-      {message && <p className="text-gray-700 text-base mt-2 max-w-xs px-2">{message}</p>}
+        <button
+          onClick={handleSend}
+          disabled={loading} // Disable button when loading
+          className={`bg-red-500 text-white text-3xl w-20 h-20 flex items-center justify-center rounded-full shadow-lg transition flex-shrink-0 ${
+            loading ? "opacity-50 cursor-not-allowed" : "hover:bg-red-600"
+          }`}
+        >
+          {loading ? (
+            <svg
+              className="animate-spin h-6 w-6 text-white"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              ></circle>
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8v8H4z"
+              ></path>
+            </svg>
+          ) : (
+            "▶"
+          )}
+        </button>
+      </div>
     </div>
   );
 }
