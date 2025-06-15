@@ -49,7 +49,7 @@ jobs:
 
       - name: Save code version
         id: code_version
-        run: echo "code_version=\"$(git show -s --format='%cd @ %h' --date=format:'%Y-%m-%d %H:%M' HEAD)\"" >> $GITHUB_ENV
+        run: echo "code_version=\"$(git show -s --format='%cd @ %h' --date=format:'%Y-%m-%d %H:%M' HEAD)\"" >> $GITHUB_OUTPUT
 
   deploy:
     name: Deploy
