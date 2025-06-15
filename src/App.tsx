@@ -1,16 +1,21 @@
 import { useEffect, useRef, useState } from "react";
 import { LocationInput, type LocationData } from "./components/LocationInput";
 import { useLocalStorage } from "./hooks/useLocalStorage"; // Import the custom hook
-import { sendNotification } from "./utils/sendNotification"; // Import the sendNotification function
+import {
+  sendNotification,
+  type NotificationPayload,
+} from "./utils/sendNotification"; // Import the sendNotification function
 
 const emojis = ["🍉", "🤗", "⛑️", "💆", "🗣️", "🤹"]; // Updated emojis array
 
 export default function App() {
   const [name, setName] = useLocalStorage("name", ""); // Use local storage for name
-  const [selected, setSelected] = useState<string | null>(null);
+  const [selectedEmoji, setSelected] = useState<string | null>(null);
   const [statusLog, setStatusLog] = useState<[string, boolean]>(["", false]);
   const [loading, setLoading] = useState(false);
   const [location, setLocation] = useState<LocationData>({ text: "" });
+  const [message, setMessage] = useState("");
+
   const [editingName, setEditingName] = useState<boolean>(!name); // State to toggle name editing
   const nameInputRef = useRef<HTMLInputElement | null>(null); // Ref for the input field
 
@@ -21,7 +26,7 @@ export default function App() {
   }, [editingName]);
 
   const toggleSelected = (emoji: string) => {
-    if (selected === emoji) {
+    if (selectedEmoji === emoji) {
       setSelected(null); // Deselect if already selected
     } else {
       setSelected(emoji); // Select the new emoji
@@ -32,9 +37,10 @@ export default function App() {
   const handleSend = async () => {
     setLoading(true); // Set loading to true
     try {
-      const payload = {
+      const payload: NotificationPayload = {
         name: name.trim(),
-        emoji: selected || "", // Use the selected emoji directly
+        emoji: selectedEmoji || "", // Use the selected emoji directly
+        message: message.trim(),
         location, // Includes text, coords, and accuracy
       };
 
@@ -85,7 +91,7 @@ export default function App() {
             key={emoji} // Key by emoji string
             onClick={() => toggleSelected(emoji)}
             className={`text-6xl p-6 rounded-3xl shadow-md transition transform active:scale-95 ${
-              selected === emoji
+              selectedEmoji === emoji
                 ? "bg-orange-300"
                 : "bg-white border border-gray-300"
             }`}
@@ -97,20 +103,19 @@ export default function App() {
 
       <LocationInput location={location} setLocation={setLocation} />
 
-      <div className="flex items-center justify-between w-full max-w-xs">
-        <p
-          className={`text-base max-w-xs px-2 text-left ${
-            statusLog[1] ? "text-red-500" : "text-gray-700"
-          }`}
-        >
-          {statusLog[0]}
-        </p>
+      <div className="flex items-center justify-between w-full space-x-2 max-w-xs">
+        <textarea
+          placeholder="Message (optional)"
+          className="flex-1 border border-orange-300 p-4 rounded-xl text-md focus:outline-none focus:ring-2 focus:ring-orange-400 w-full"
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+        />
 
         <button
           onClick={handleSend}
-          disabled={loading || !name || !selected} // Disable button if loading or data is incomplete
+          disabled={loading || !name || !selectedEmoji} // Disable button if loading or data is incomplete
           className={`bg-teal-500 text-white text-3xl w-20 h-20 flex items-center justify-center rounded-full shadow-lg transition flex-shrink-0 ${
-            loading || !name || !selected
+            loading || !name || !selectedEmoji
               ? "opacity-50 cursor-not-allowed"
               : "hover:bg-teal-600"
           }`}
@@ -141,6 +146,14 @@ export default function App() {
           )}
         </button>
       </div>
+
+      <p
+        className={`text-base max-w-xs px-2 text-left w-full ${
+          statusLog[1] ? "text-red-500" : "text-gray-700"
+        }`}
+      >
+        {statusLog[0]}
+      </p>
     </div>
   );
 }

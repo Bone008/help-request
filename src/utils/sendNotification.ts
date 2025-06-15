@@ -2,20 +2,21 @@ import type { LocationData } from "../components/LocationInput";
 
 const NTFY_TOPIC = "hannatesting";
 
-interface NotificationPayload {
+export interface NotificationPayload {
   name: string;
+  emoji: string;
   message: string;
   location: LocationData;
 }
 
 export async function sendNotification(payload: NotificationPayload) {
-  const { name, message, location } = payload;
+  const { name, emoji, message, location } = payload;
 
   // Construct the message body
   const formattedAccuracy = location.accuracy
     ? `(accuracy: ±${location.accuracy.toFixed(0)} m)`
     : undefined;
-  const messageParts = [message, location.text, formattedAccuracy];
+  const messageParts = [emoji, message, "\n", location.text, formattedAccuracy];
   const messageBody = messageParts.filter(Boolean).join(" ");
 
   // Construct the click URL for Google Maps if coordinates are present
