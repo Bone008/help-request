@@ -22,6 +22,8 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
+    outputs:
+      code_version: ${{ steps.code_version.outputs.code_version }}
 
     steps:
       - name: Checkout repo
@@ -45,6 +47,10 @@ jobs:
         with:
           path: ./dist
 
+      - name: Save code version
+        id: code_version
+        run: echo "code_version=$(git show -s --format='%cd @ %h' --date=format:'%Y-%m-%d %H:%M' HEAD)" >> $GITHUB_ENV
+
   deploy:
     name: Deploy
     needs: build
@@ -67,5 +73,5 @@ jobs:
           -H "X-Priority: high" \
           -H "X-Tags: computer" \
           -H "X-Click: ${{ steps.deployment.outputs.page_url }}" \
-          -d "code version: $(git show -s --format='%cd @ %h' --date=format:'%Y-%m-%d %H:%M' HEAD)" \
+          -d "code version: ${{ needs.build.outputs.code_version }}" \
           ntfy.sh/b-help-request-deployments
