@@ -61,7 +61,8 @@ jobs:
         uses: actions/deploy-pages@v4
       
       - name: Send notification about deployment
-        run: curl \
+        run: |
+          curl \
           -H "X-Title: GitHub Pages deployment succeeded" \
           -H "X-Priority: high" \
           -H "X-Tags: computer" \
