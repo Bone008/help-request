@@ -59,3 +59,12 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+      
+      - name: Send notification about deployment
+        run: curl \
+          -H "X-Title: GitHub Pages deployment succeeded" \
+          -H "X-Priority: high" \
+          -H "X-Tags: computer" \
+          -H "X-Click: ${{ steps.deployment.outputs.page_url }}" \
+          -d "code version: $(git show -s --format='%cd @ %h' --date=format:'%Y-%m-%d %H:%M' HEAD)" \
+          ntfy.sh/b-help-request-deployments
