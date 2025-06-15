@@ -44,7 +44,7 @@ export default function App() {
         location, // Includes text, coords, and accuracy
       };
 
-      await sendNotification(config!.nftyTopic, payload); // Send the notification
+      await sendNotification(config!.ntfyTopic, payload); // Send the notification
 
       setStatusLog(["Help is on the way!", false]);
     } catch (error) {

@@ -6,7 +6,7 @@ import { useLocalStorage } from "./useLocalStorage";
 const CONFIG_URL = "./config.json";
 
 export interface ConfigData {
-  nftyTopic: string;
+  ntfyTopic: string;
   emojis: string[];
 }
 
