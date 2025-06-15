@@ -5,10 +5,10 @@ import {
   sendNotification,
   type NotificationPayload,
 } from "./utils/sendNotification"; // Import the sendNotification function
-
-const emojis = ["🍉", "🤗", "⛑️", "💆", "🗣️", "🤹"]; // Updated emojis array
+import { useConfig } from "./hooks/useConfig";
 
 export default function App() {
+  const { config, loading: configLoading } = useConfig();
   const [name, setName] = useLocalStorage("name", ""); // Use local storage for name
   const [selectedEmoji, setSelected] = useState<string | null>(null);
   const [statusLog, setStatusLog] = useState<[string, boolean]>(["", false]);
@@ -44,7 +44,7 @@ export default function App() {
         location, // Includes text, coords, and accuracy
       };
 
-      await sendNotification(payload); // Send the notification
+      await sendNotification(config!.nftyTopic, payload); // Send the notification
 
       setStatusLog(["Help is on the way!", false]);
     } catch (error) {
@@ -54,6 +54,10 @@ export default function App() {
       setLoading(false); // Set loading to false
     }
   };
+
+  // Disable button if loading or data is incomplete
+  const canSubmit =
+    loading || configLoading || !name || (!selectedEmoji && !message.trim());
 
   return (
     <div className="min-h-screen p-6 text-center flex flex-col items-center justify-start space-y-6 bg-teal-100">
@@ -86,7 +90,7 @@ export default function App() {
       )}
 
       <div className="grid grid-cols-2 gap-6 w-full max-w-xs">
-        {emojis.map((emoji) => (
+        {config?.emojis.map((emoji) => (
           <button
             key={emoji} // Key by emoji string
             onClick={() => toggleSelected(emoji)}
@@ -113,11 +117,9 @@ export default function App() {
 
         <button
           onClick={handleSend}
-          disabled={loading || !name || !selectedEmoji} // Disable button if loading or data is incomplete
+          disabled={canSubmit}
           className={`bg-teal-500 text-white text-3xl w-20 h-20 flex items-center justify-center rounded-full shadow-lg transition flex-shrink-0 ${
-            loading || !name || !selectedEmoji
-              ? "opacity-50 cursor-not-allowed"
-              : "hover:bg-teal-600"
+            canSubmit ? "opacity-50 cursor-not-allowed" : "hover:bg-teal-600"
           }`}
         >
           {loading ? (
@@ -142,7 +144,17 @@ export default function App() {
               ></path>
             </svg>
           ) : (
-            "▶"
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              className="h-8 w-8"
+            >
+              <path
+                d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"
+                fill="currentColor"
+              />
+            </svg>
           )}
         </button>
       </div>

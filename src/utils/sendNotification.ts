@@ -1,7 +1,5 @@
 import type { LocationData } from "../components/LocationInput";
 
-const NTFY_TOPIC = "hannatesting";
-
 export interface NotificationPayload {
   name: string;
   emoji: string;
@@ -9,7 +7,10 @@ export interface NotificationPayload {
   location: LocationData;
 }
 
-export async function sendNotification(payload: NotificationPayload) {
+export async function sendNotification(
+  ntfyTopic: string,
+  payload: NotificationPayload
+) {
   const { name, emoji, message, location } = payload;
 
   // Construct the message body
@@ -25,7 +26,7 @@ export async function sendNotification(payload: NotificationPayload) {
     : undefined;
 
   try {
-    await fetch(`https://ntfy.sh/${NTFY_TOPIC}`, {
+    await fetch(`https://ntfy.sh/${ntfyTopic}`, {
       method: "POST",
       headers: {
         "X-Priority": "urgent", // Set priority to urgent
