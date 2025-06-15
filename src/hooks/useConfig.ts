@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 // Assume this hook exists and works like useState but syncs with localStorage
 import { useLocalStorage } from "./useLocalStorage";
 
+const CONFIG_URL = "./config.json";
+
 export interface ConfigData {
   nftyTopic: string;
   emojis: string[];
@@ -21,7 +23,7 @@ let listeners: ((data: ConfigData) => void)[] = [];
 function fetchConfig(): Promise<ConfigData> {
   if (sharedConfig) return Promise.resolve(sharedConfig);
   if (sharedPromise) return sharedPromise;
-  sharedPromise = fetch("/config.json")
+  sharedPromise = fetch(CONFIG_URL)
     .then((res) => {
       if (!res.ok) throw new Error("Failed to fetch config");
       return res.json();
